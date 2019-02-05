@@ -37,15 +37,17 @@ int main() {
 
 	if (bind(sock, (sockaddr*) &address, sizeof(address)) < 0) error("ERROR on binding");
 	
-	sockaddr_in sender;
-	unsigned int sender_size = sizeof(sender); //socklen_t = "integer type of at least 32 bits" (unsigned because size < 0 makes no sense)
-	int bytes_received = recvfrom(sock, buffer, 1024, 0, (sockaddr*) &sender, &sender_size);
+	while(true){	
+		sockaddr_in sender;
+		unsigned int sender_size = sizeof(sender); //socklen_t = "integer type of at least 32 bits" (unsigned because size < 0 makes no sense)
+		int bytes_received = recvfrom(sock, buffer, 1024, 0, (sockaddr*) &sender, &sender_size);
 
-	if (bytes_received < 0) error("ERROR receiving message");
-	else {
-		buffer[1024] = 0;
-		printf("%s:%d - %s", inet_ntoa(sender.sin_addr), ntohs(sender.sin_port), buffer);
-		// ntoa converts address in network byte-order & binary form to string in typical ipv4 notation 
+		if (bytes_received < 0) error("ERROR receiving message");
+		else {
+			buffer[1024] = 0;
+			printf("%s:%d - %s \n", inet_ntoa(sender.sin_addr), ntohs(sender.sin_port), buffer);
+			// ntoa converts address in network byte-order & binary form to string in typical ipv4 notation 
+		}
 	}
 	return 0;
 }
