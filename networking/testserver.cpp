@@ -20,7 +20,7 @@ void error(const char* msg) {
 
 
 int main() {
-	int sock, //sock is a file descriptor int
+	int sock; //sock is a file descriptor int
 	short port = 4200;
 	char buffer[1024]; // 1024 bytes because why not
 	
