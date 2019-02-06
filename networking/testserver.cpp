@@ -18,13 +18,18 @@ void error(const char* msg) {
 	exit(1);
 }
 
+struct input{  //struct to hold player input in bools
+	bool up, down, left, right;
+};
+
 const unsigned int buffersize = 1024;
 
 int main() {
 	int sock; //sock is a file descriptor int
 	short port = 4200;
 	unsigned char buffer[buffersize]; // 1024 bytes because why not
-	
+	input inputs;
+
 	sockaddr_in address; //_in - internet	
 
 	sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP); //AF_INET for ip, SOCK_DGRAM for UDP
@@ -38,14 +43,23 @@ int main() {
 
 	if (bind(sock, (sockaddr*) &address, sizeof(address)) < 0) error("ERROR on binding");
 	
+	unsigned char server_input;
+
 	while(true){	
 		sockaddr_in sender;
 		unsigned int sender_size = sizeof(sender); //socklen_t = "integer type of at least 32 bits" (unsigned because size < 0 makes no sense)
 		int bytes_received = recvfrom(sock, buffer, buffersize, 0, (sockaddr*) &sender, &sender_size);
+		
+		server_input = buffer[0];
+		
+		inputs.up 	= server_input & 0x8;
+		inputs.down 	= server_input & 0x4;  	
+		inputs.left 	= server_input & 0x2;
+		inputs.right 	= server_input & 0x1;
 
 		if (bytes_received < 0) error("ERROR receiving message");
 		else {
-			printf("%s:%d - %s \n", inet_ntoa(sender.sin_addr), ntohs(sender.sin_port), buffer);
+			printf("%s:%d - %d, %d, %d, %d -  %d, %s\n", inet_ntoa(sender.sin_addr), ntohs(sender.sin_port), inputs.up, inputs.down, inputs.left, inputs.right, server_input, buffer);
 			// ntoa converts address in network byte-order & binary form to string in typical ipv4 notation 
 		}
 	}
