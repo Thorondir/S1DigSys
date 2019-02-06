@@ -20,9 +20,9 @@ void error(const char* msg) {
 
 
 int main() {
-	int sock; //sock is a file descriptor int
+	int sock, buffersize = 1; //sock is a file descriptor int
 	short port = 4200;
-	char buffer[1024]; // 1024 bytes because why not
+	char buffer[buffersize]; // 1024 bytes because why not
 	
 	sockaddr_in address; //_in - internet	
 
@@ -40,11 +40,11 @@ int main() {
 	while(true){	
 		sockaddr_in sender;
 		unsigned int sender_size = sizeof(sender); //socklen_t = "integer type of at least 32 bits" (unsigned because size < 0 makes no sense)
-		int bytes_received = recvfrom(sock, buffer, 1024, 0, (sockaddr*) &sender, &sender_size);
+		int bytes_received = recvfrom(sock, buffer, buffersize, 0, (sockaddr*) &sender, &sender_size);
 
 		if (bytes_received < 0) error("ERROR receiving message");
 		else {
-			buffer[1024] = 0;
+			buffer[buffersize] = 0;
 			printf("%s:%d - %s \n", inet_ntoa(sender.sin_addr), ntohs(sender.sin_port), buffer);
 			// ntoa converts address in network byte-order & binary form to string in typical ipv4 notation 
 		}
