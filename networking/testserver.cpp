@@ -18,11 +18,12 @@ void error(const char* msg) {
 	exit(1);
 }
 
+const unsigned int buffersize = 1024;
 
 int main() {
-	int sock, buffersize = 1; //sock is a file descriptor int
+	int sock; //sock is a file descriptor int
 	short port = 4200;
-	char buffer[buffersize]; // 1024 bytes because why not
+	unsigned char buffer[buffersize]; // 1024 bytes because why not
 	
 	sockaddr_in address; //_in - internet	
 
@@ -44,7 +45,6 @@ int main() {
 
 		if (bytes_received < 0) error("ERROR receiving message");
 		else {
-			buffer[buffersize] = 0;
 			printf("%s:%d - %s \n", inet_ntoa(sender.sin_addr), ntohs(sender.sin_port), buffer);
 			// ntoa converts address in network byte-order & binary form to string in typical ipv4 notation 
 		}
