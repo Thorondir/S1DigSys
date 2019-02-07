@@ -9,6 +9,10 @@ screen = pygame.display.set_mode((150,150))
 run = True
 dirkeys = [False, False, False, False]
 while run:
+    sock.recvfrom()
+
+    
+    
     for event in pygame.event.get():
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_w:        dirkeys[0] = True
@@ -32,4 +36,7 @@ while run:
     msg = int(msg, 2) 
 
     sock.sendto(bytes([msg]), ("127.0.0.1", 4200)) # send message to address (tuple with string ip and int port)
+    
+    state = sock.recvfrom(1024)[0]
+    
 

@@ -18,8 +18,28 @@ void error(const char* msg) {
 	exit(1);
 }
 
-struct input{  //struct to hold player input in bools
+struct client_input{  //struct to hold player input in bools
 	bool up, down, left, right;
+};
+
+class player{
+	int x, y;
+	public:
+		int* location[2] = {&x, &y};
+		client_input input;
+
+		player(int a, int b){
+			x = 0;
+			y = 0;
+		}
+				
+		void move(int magnitude){	
+			if (input.up && !input.down) 		y += magnitude;
+			else if (input.down && !input.up) 	y -= magnitude;
+			if (input.left && !input.right) 	x -= magnitude;
+			else if (input.right && !input.left) 	x += magnitude;
+		}	
+
 };
 
 const unsigned int buffersize = 1024;
@@ -28,7 +48,8 @@ int main() {
 	int sock; //sock is a file descriptor int
 	short port = 4200;
 	unsigned char buffer[buffersize]; // 1024 bytes because why not
-	input inputs;
+
+	player player(0,0);
 
 	sockaddr_in address; //_in - internet	
 
@@ -50,18 +71,19 @@ int main() {
 		unsigned int sender_size = sizeof(sender); //socklen_t = "integer type of at least 32 bits" (unsigned because size < 0 makes no sense)
 		int bytes_received = recvfrom(sock, buffer, buffersize, 0, (sockaddr*) &sender, &sender_size);
 		
+		if (bytes_received < 0) error("ERROR receiving message");
 		server_input = buffer[0];
 		
-		inputs.up 	= server_input & 0x8;
-		inputs.down 	= server_input & 0x4;  	
-		inputs.left 	= server_input & 0x2;
-		inputs.right 	= server_input & 0x1;
+		player.input.up 	= server_input & 0x8;
+		player.input.down 	= server_input & 0x4;  	
+		player.input.left 	= server_input & 0x2;
+		player.input.right 	= server_input & 0x1;
 
-		if (bytes_received < 0) error("ERROR receiving message");
-		else {
-			printf("%s:%d - %d, %d, %d, %d -  %d, %s\n", inet_ntoa(sender.sin_addr), ntohs(sender.sin_port), inputs.up, inputs.down, inputs.left, inputs.right, server_input, buffer);
-			// ntoa converts address in network byte-order & binary form to string in typical ipv4 notation 
-		}
+		player.move(5);
+
+		
+		int bytes_sent = sendto(sock, buffer, buffersize, 0, (sockaddr*) &sender, &sender_size);
+
 	}
 	return 0;
 }
