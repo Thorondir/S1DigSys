@@ -1,5 +1,6 @@
 #include <cstdio>
 #include <string>
+#include <cstring>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <netinet/in.h>
@@ -65,11 +66,16 @@ int main() {
 	if (bind(sock, (sockaddr*) &address, sizeof(address)) < 0) error("ERROR on binding");
 	
 	unsigned char server_input;
+	
+	sockaddr_in sender;
+	unsigned int sender_size;
+	
+	int bytes_received;
+	int bytes_sent;
 
 	while(true){	
-		sockaddr_in sender;
-		unsigned int sender_size = sizeof(sender); //socklen_t = "integer type of at least 32 bits" (unsigned because size < 0 makes no sense)
-		int bytes_received = recvfrom(sock, buffer, buffersize, 0, (sockaddr*) &sender, &sender_size);
+		sender_size = sizeof(sender); //socklen_t = "integer type of at least 32 bits" (unsigned because size < 0 makes no sense)
+		bytes_received = recvfrom(sock, buffer, buffersize, 0, (sockaddr*) &sender, &sender_size);
 		
 		if (bytes_received < 0) error("ERROR receiving message");
 		server_input = buffer[0];
@@ -82,7 +88,14 @@ int main() {
 		player.move(5);
 
 		
-		int bytes_sent = sendto(sock, buffer, buffersize, 0, (sockaddr*) &sender, &sender_size);
+		int write_index = 0;
+		memcpy(&buffer[write_index], player.location[0], sizeof(*player.location[0]));
+		write_index += sizeof(*player.location[0]);
+		memcpy(&buffer[write_index], player.location[1], sizeof(*player.location[1]));
+		write_index += sizeof(*player.location[1]);
+		
+		bytes_sent = sendto(sock, buffer, buffersize, 0, (sockaddr*) &sender, sender_size);
+		printf("%d \n", bytes_sent);
 
 	}
 	return 0;
