@@ -85,7 +85,7 @@ int main() {
 		player.input.left 	= server_input & 0x2;
 		player.input.right 	= server_input & 0x1;
 
-		player.move(5);
+		player.move(1);
 
 		
 		int write_index = 0;
