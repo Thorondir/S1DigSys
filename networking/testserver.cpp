@@ -1,6 +1,7 @@
 #include <cstdio>
 #include <string>
 #include <cstring>
+#include <time.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <netinet/in.h>
@@ -28,10 +29,15 @@ class player{
 	public:
 		int* location[2] = {&x, &y};
 		client_input input;
+        
+        player() {
+            x = 0;
+            y = 0;
+        }
 
 		player(int a, int b){
-			x = 0;
-			y = 0;
+			x = a;
+			y = b;
 		}
 				
 		void move(int magnitude){	
@@ -43,14 +49,15 @@ class player{
 
 };
 
-const unsigned int buffersize = 1024;
 
 int main() {
+	const unsigned int buffersize = 1024;
+	const unsigned short serversize = 4; //Maximum number of players
 	int sock; //sock is a file descriptor int
 	short port = 4200;
 	unsigned char buffer[buffersize]; // 1024 bytes because why not
 
-	player player(0,0);
+	player players[serversize];
 
 	sockaddr_in address; //_in - internet	
 
@@ -72,22 +79,33 @@ int main() {
 	
 	int bytes_received;
 	int bytes_sent;
+    
+    timespec time;
+    timespec remainder;
+    timespec wait;
+    wait.tv_nsec = 0;
 
 	while(true){	
+        
+        nanosleep(&wait, &remainder)
+        clock_gettime(CLOCK_MONOTONIC, &time);
+
+
 		sender_size = sizeof(sender); //socklen_t = "integer type of at least 32 bits" (unsigned because size < 0 makes no sense)
-		bytes_received = recvfrom(sock, buffer, buffersize, 0, (sockaddr*) &sender, &sender_size);
+		//bytes_received = recvfrom(sock, buffer, buffersize, 0, (sockaddr*) &sender, &sender_size);
 		
-		if (bytes_received < 0) error("ERROR receiving message");
-		server_input = buffer[0];
-		
+		//if (bytes_received < 0) error("ERROR receiving message");
+		//server_input = buffer[0];
+	    /*	
 		player.input.up 	= server_input & 0x8;
 		player.input.down 	= server_input & 0x4;  	
 		player.input.left 	= server_input & 0x2;
 		player.input.right 	= server_input & 0x1;
 
 		player.move(1);
-
-		
+        */
+        printf("%ld\n", time.tv_nsec);
+	    /*	
 		int write_index = 0;
 		memcpy(&buffer[write_index], player.location[0], sizeof(*player.location[0]));
 		write_index += sizeof(*player.location[0]);
@@ -96,7 +114,7 @@ int main() {
 		
 		bytes_sent = sendto(sock, buffer, buffersize, 0, (sockaddr*) &sender, sender_size);
 		printf("%d \n", bytes_sent);
-
+        */
 	}
 	return 0;
 }
