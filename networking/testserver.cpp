@@ -29,6 +29,7 @@ class player{
 	public:
 		int* location[2] = {&x, &y};
 		client_input input;
+		sockaddr_in address;
         
         player() {
             x = 0;
@@ -49,6 +50,16 @@ class player{
 
 };
 
+struct timespec getdeltatime(struct timespec current, struct timespec stamp){
+	timespec delta;
+	delta.tv_nsec = current.tv_nsec - stamp.tv_nsec;
+	delta.tv_sec = current.tv_sec - stamp.tv_sec;
+	if (delta.tv_nsec < 0){
+		delta.tv_sec -= 1;
+		delta.tv_nsec = 1000000000 - (-1*delta.tv_nsec);
+	}
+	return delta;
+}
 
 int main() {
 	const unsigned int buffersize = 1024;
@@ -59,53 +70,54 @@ int main() {
 
 	player players[serversize];
 
-	sockaddr_in address; //_in - internet	
+	sockaddr_in serveraddress; //_in - internet	
 
 	sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP); //AF_INET for ip, SOCK_DGRAM for UDP
 	if(sock < 0) { //most of these functions return -1 if error
 		error("ERROR opening socket");
 	}
 	
-	address.sin_family = AF_INET;
-	address.sin_addr.s_addr = INADDR_ANY;
-	address.sin_port = htons(port); //htons: host to network short (byte order) *probably do more research into this since i don't really understand it*
+	serveraddress.sin_family = AF_INET;
+	serveraddress.sin_addr.s_addr = INADDR_ANY;
+	serveraddress.sin_port = htons(port); //htons: host to network short (byte order) *probably do more research into this since i don't really understand it*
 
 	if (bind(sock, (sockaddr*) &address, sizeof(address)) < 0) error("ERROR on binding");
 	
 	unsigned char server_input;
 	
-	sockaddr_in sender;
-	unsigned int sender_size;
+	sockaddr_in sender; //address of client sending information to server
+	unsigned int sender_size; //size of sender's address object
 	
 	int bytes_received;
 	int bytes_sent;
     
-    timespec time;
-    timespec remainder;
-    timespec wait;
-    wait.tv_nsec = 0;
+    timespec time; //timespec to store current time
+	timespec deltatime; //timespec to store change in time between frames
+	timespec stamp; //timespec to store timestamp for calculating deltatime
+    timespec remainder; //timespec to store remainder if nanosleep fails
+    timespec wait; //how to sleep with nanosleep
+	wait.tv_sec		= 0;
+    wait.tv_nsec 	= 12; //nanoseconds variable of timespec wait
 
-	while(true){	
-        
-        nanosleep(&wait, &remainder)
-        clock_gettime(CLOCK_MONOTONIC, &time);
+	clock_gettime(CLOCK_MONOTONIC, &time);
+	stamp = time;
 
+	while(true){
+        clock_gettime(CLOCK_MONOTONIC, &time); //get current time at start of loop
+		deltatime = getdeltatime(time, stamp);
+		stamp = time;
+		wait.tv_nsec = (deltatime.tv_nsec/16666666) * 16666666 + (16666666 - deltatime.tv_nsec); //wait until 1/60th of a second has passed since the start of the last tick. If it's already been over 1/60th of a second, wait even longer
+		nanosleep(&wait, &remainder);
 
 		sender_size = sizeof(sender); //socklen_t = "integer type of at least 32 bits" (unsigned because size < 0 makes no sense)
-		//bytes_received = recvfrom(sock, buffer, buffersize, 0, (sockaddr*) &sender, &sender_size);
-		
-		//if (bytes_received < 0) error("ERROR receiving message");
-		//server_input = buffer[0];
-	    /*	
-		player.input.up 	= server_input & 0x8;
-		player.input.down 	= server_input & 0x4;  	
-		player.input.left 	= server_input & 0x2;
-		player.input.right 	= server_input & 0x1;
-
-		player.move(1);
-        */
-        printf("%ld\n", time.tv_nsec);
-	    /*	
+		bytes_received = recvfrom(sock, buffer, buffersize, 0, (sockaddr*) &sender, &sender_size);
+		for  (player p : players){
+			if (sender.sin_addr == p.address.sin_addr){
+				resolveinput(buffer[0], p)
+			} else if ()
+		}
+		if (bytes_received < 0) error("ERROR receiving message");
+	   	
 		int write_index = 0;
 		memcpy(&buffer[write_index], player.location[0], sizeof(*player.location[0]));
 		write_index += sizeof(*player.location[0]);
@@ -114,7 +126,7 @@ int main() {
 		
 		bytes_sent = sendto(sock, buffer, buffersize, 0, (sockaddr*) &sender, sender_size);
 		printf("%d \n", bytes_sent);
-        */
+        
 	}
 	return 0;
 }
