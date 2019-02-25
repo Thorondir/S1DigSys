@@ -28,14 +28,14 @@ struct client_input{  //struct to hold player input in bools
 };
 
 enum class client_message : unsigned char {
-    join,
-    leave,
-    input
+    join =      0x00,
+    leave =     0x01,
+    input =     0x02,
 };
 
 enum class server_message : unsigned char {
-    join_result,
-    state
+    join_result = 0,
+    state = 1,
 };
 
 class player{
@@ -131,16 +131,17 @@ int main() {
     float time_since_heard[serversize]; //list of times from clients for timeout
 
     while(true){
-    clock_gettime(CLOCK_MONOTONIC, &time); //get current time at start of loop
-            deltatime = getdeltatime(time, stamp);
-            stamp = time;
-            wait.tv_nsec = (deltatime.tv_nsec/16666666) * 16666666 + (16666666 - deltatime.tv_nsec); //wait until 1/60th of a second has passed since the start of the last tick. If it's already been over 1/60th of a second, wait even longer
-            nanosleep(&wait, &remainder);
+        clock_gettime(CLOCK_MONOTONIC, &time); //get current time at start of loop
+        deltatime = getdeltatime(time, stamp);
+        stamp = time;
+        wait.tv_nsec = (deltatime.tv_nsec/16666666) * 16666666 + (16666666 - deltatime.tv_nsec); //wait until 1/60th of a second has passed since the start of the last tick. If it's already been over 1/60th of a second, wait even longer
+        //nanosleep(&wait, &remainder);
 
         while(true){
             int flags = 0;
             sockaddr_in from;
             unsigned int from_size = sizeof(from);
+            unsigned char buffer[buffersize];
             int bytes_received = recvfrom(sock, buffer, buffersize, flags, (sockaddr*)&from, &from_size);
             if (bytes_received < 0){
                 if(errno != EWOULDBLOCK){
@@ -148,17 +149,20 @@ int main() {
                 }
                 break;
             }
-            
-            switch(buffer[0]){
-                case client_message::join:
-
+            /*
+            switch((client_message)buffer[0]){
+                case 0x00:
+                    printf("join");
                     break;
                 case client_message::leave:
-
+                    printf("leave");
                     break;
                 case client_message::input:
-
+                    printf("input");
                     break;
+            }*/
+            if(buffer[0] == (unsigned char)client_message::join){
+                printf("JOIN\n");
             }
         }
     }
