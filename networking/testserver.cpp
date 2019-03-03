@@ -56,10 +56,10 @@ class player{
         }
                         
         void move(int magnitude){	
-            if (input.up && !input.down) 		y += magnitude;
-            else if (input.down && !input.up) 	y -= magnitude;
-            if (input.left && !input.right) 	x -= magnitude;
-            else if (input.right && !input.left) 	x += magnitude;
+            if (input.up && !input.down) 	    y += magnitude;
+            else if (input.down && !input.up)	    y -= magnitude;
+            if (input.left && !input.right)	    x -= magnitude;
+            else if (input.right && !input.left)    x += magnitude;
         }	
 
 };
@@ -128,6 +128,7 @@ int main() {
     stamp = time;
 
     player players[serversize]; //list of players 
+    bool playerslots[serversize] = {0};
     float time_since_heard[serversize]; //list of times from clients for timeout
 
     while(true){
@@ -144,26 +145,35 @@ int main() {
             unsigned char buffer[buffersize];
             int bytes_received = recvfrom(sock, buffer, buffersize, flags, (sockaddr*)&from, &from_size);
             if (bytes_received < 0){
-                if(errno != EWOULDBLOCK){
+                if(errno != EWOULDBLOCK || errno != EAGAIN){
                     error("ERROR receiving");
                 }
                 break;
             }
-            /*
             switch((client_message)buffer[0]){
-                case 0x00:
-                    printf("join");
-                    break;
+		case client_message::join:
+		    for(int i = 0; i < serversize + 1; i++){//serversize + 1, because if it goes past that we know the server was full
+			if(playerslots[i] == false){
+			    playerslots[i] = true;
+			    players[i] = player();
+			    buffer[0] = true;
+			    buffer[1] = i; //since it's a byte, serversize must always be 256 or less
+			    sendto(sock, buffer, buffersize, flags, (sockaddr*)&from, from_size);
+			    break;
+			}
+			if(i == serversize){ //if i reaches serversize, then the server was full and the client failed to join
+			    buffer[0] = 0;
+			    sendto(sock, buffer, buffersize, flags, (sockaddr*)&from, from_size);
+			}
+		    }
+		    break;
                 case client_message::leave:
-                    printf("leave");
+		    printf("leave");
                     break;
                 case client_message::input:
                     printf("input");
                     break;
-            }*/
-            if(buffer[0] == (unsigned char)client_message::join){
-                printf("JOIN\n");
-            }
+	    }
         }
     }
     return 0;
