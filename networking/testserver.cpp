@@ -122,8 +122,7 @@ int main() {
     timespec remainder; //timespec to store remainder if nanosleep fails
     timespec wait; //how to sleep with nanosleep
     wait.tv_sec		= 0;
-    wait.tv_nsec 	= 12; //nanoseconds variable of timespec wait
-
+	
     clock_gettime(CLOCK_MONOTONIC, &time);
     stamp = time;
 
@@ -136,7 +135,7 @@ int main() {
         deltatime = getdeltatime(time, stamp);
         stamp = time;
         wait.tv_nsec = (deltatime.tv_nsec/16666666) * 16666666 + (16666666 - deltatime.tv_nsec); //wait until 1/60th of a second has passed since the start of the last tick. If it's already been over 1/60th of a second, wait even longer
-        //nanosleep(&wait, &remainder);
+        nanosleep(&wait, &remainder);
 
         while(true){
             int flags = 0;
