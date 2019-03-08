@@ -14,8 +14,8 @@ def join(iptojoin, name):
         return received[1]
     else:
         return -1 #anything less than 0 is an error, since slots are unsigned int
-def leave():
-    socket.sendto( , (IP, PORT)) # message telling server to delete this player.
+def leave(playerslot):
+    socket.sendto(bytes[1, playerslot] , (IP, PORT)) # message telling server to delete this player.
     #INPUTS:  bool{KEY1, KEY2, KEY3, KEY4, UP, DOWN, LEFT, RIGHT}
 def send_input(inputs):
     msg = '' 

@@ -141,7 +141,7 @@ int main() {
             int flags = 0;
             sockaddr_in from;
             unsigned int from_size = sizeof(from);
-            unsigned char buffer[buffersize];
+            unsigned char buffer[buffersize]; //perhaps convert byte order?
             int bytes_received = recvfrom(sock, buffer, buffersize, flags, (sockaddr*)&from, &from_size);
             if (bytes_received < 0){
                 if(errno != EWOULDBLOCK || errno != EAGAIN){
@@ -155,6 +155,7 @@ int main() {
 			if(playerslots[i] == false){
 			    playerslots[i] = true;
 			    players[i] = player();
+			    players[i].address = from;
 			    buffer[0] = true;
 			    buffer[1] = i; //since it's a byte, serversize must always be 256 or less
 			    sendto(sock, buffer, buffersize, flags, (sockaddr*)&from, from_size);
@@ -167,10 +168,31 @@ int main() {
 		    }
 		    break;
                 case client_message::leave:
-		    printf("leave");
+		    playerslots[buffer[1]] = false;
+		    buffer[0] = 0x00;
+		    sendto(sock, buffer, buffersize, flags, (sockaddr*)&from, from_size);
                     break;
-                case client_message::input:
-                    printf("input");
+                case client_message::input://[3], [slot number], [input packet]
+                    unsigned char slotno = buffer[1];
+		    if(0x08 & buffer[2]) players[slotno].input.up = true;
+		    else players[slotno].input.up = false;
+		    if(0x04 & buffer[2]) players[slotno].input.down = true;
+		    else players[slotno].input.down = false;
+		    if(0x02 & buffer[2]) players[slotno].input.left = true;
+		    else players[slotno].input.left = false;
+		    if(0x01 & buffer[2]) players[slotno].input.right = true;
+		    else players[slotno].input.right = false;
+		    
+		    players[slotno].move(1);
+		    int memindex = 0;
+		    memcpy(&buffer[memindex], players[slotno].location[0], sizeof(*players[slotno].location[0]));
+		    memindex += sizeof(*players[slotno].location[0]);
+		    memcpy(&buffer[memindex], players[slotno].location[1], sizeof(*players[slotno].location[1]));
+		    
+		    sendto(sock, buffer, buffersize, flags, (sockaddr*) &from, from_size);
+
+		    printf("test");
+		    
                     break;
 	    }
         }

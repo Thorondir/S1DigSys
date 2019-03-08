@@ -6,8 +6,11 @@ buffersize = 1024
 
 while True:
     msg = input()
-    msg = int(msg,2)
-    sock.sendto(bytes([msg]), ("127.0.0.1", 4200))
+    if msg == "22":
+        sock.sendto(bytes([0x01,0x00]), ("127.0.0.1", 4200))
+    else:
+        msg = int(msg,2)
+        sock.sendto(bytes([msg]), ("127.0.0.1", 4200))
 
     received = sock.recv(buffersize);
     
