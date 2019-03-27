@@ -39,9 +39,9 @@ enum class server_message : unsigned char {
 };
 
 class player{
-    int x, y;
     public:
-    	int* location[2] = {&x, &y};
+	int x, y;
+
     	client_input input;
     	sockaddr_in address;
         
@@ -154,7 +154,7 @@ int main() {
 		    for(int i = 0; i < serversize + 1; i++){//serversize + 1, because if it goes past that we know the server was full
 			if(playerslots[i] == false){
 			    playerslots[i] = true;
-			    players[i] = player();
+			    players[i] = player(256,69);
 			    players[i].address = from;
 			    buffer[0] = true;
 			    buffer[1] = i; //since it's a byte, serversize must always be 256 or less
@@ -184,15 +184,17 @@ int main() {
 		    else players[slotno].input.right = false;
 		    
 		    players[slotno].move(1);
-		    int memindex = 0;
-		    memcpy(&buffer[memindex], players[slotno].location[0], sizeof(*players[slotno].location[0]));
-		    memindex += sizeof(*players[slotno].location[0]);
-		    memcpy(&buffer[memindex], players[slotno].location[1], sizeof(*players[slotno].location[1]));
+		    
+
+		    buffer[0] = slotno;
+		    int memindex = 1;
+		    memcpy(&buffer[memindex], &players[slotno].x, sizeof(players[slotno].x));
+		    memindex += sizeof(players[slotno].x);
+		    memcpy(&buffer[memindex], &players[slotno].y, sizeof(players[slotno].y));
 		    
 		    sendto(sock, buffer, buffersize, flags, (sockaddr*) &from, from_size);
 
 		    printf("test");
-		    
                     break;
 	    }
         }
