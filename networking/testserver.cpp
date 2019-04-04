@@ -56,8 +56,8 @@ class player{
         }
                         
         void move(int magnitude){	
-            if (input.up && !input.down) 	    y += magnitude;
-            else if (input.down && !input.up)	    y -= magnitude;
+            if (input.up && !input.down) 	    y -= magnitude;
+            else if (input.down && !input.up)	    y += magnitude;
             if (input.left && !input.right)	    x -= magnitude;
             else if (input.right && !input.left)    x += magnitude;
         }	
@@ -87,7 +87,7 @@ int main() {
 
     sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP); //AF_INET for ip, SOCK_DGRAM for UDP
     if(sock < 0) { //most of these functions return -1 if error
-            error("ERROR opening socket");
+        error("ERROR opening socket");
     }
 	
     //setting nonblocking
@@ -154,7 +154,7 @@ int main() {
 		    for(int i = 0; i < serversize + 1; i++){//serversize + 1, because if it goes past that we know the server was full
 			if(playerslots[i] == false){
 			    playerslots[i] = true;
-			    players[i] = player(256,69);
+			    players[i] = player(10,10);
 			    players[i].address = from;
 			    buffer[0] = true;
 			    buffer[1] = i; //since it's a byte, serversize must always be 256 or less
@@ -162,7 +162,7 @@ int main() {
 			    break;
 			}
 			if(i == serversize){ //if i reaches serversize, then the server was full and the client failed to join
-			    buffer[0] = 0;
+			    buffer[0] = 0x0;
 			    sendto(sock, buffer, buffersize, flags, (sockaddr*)&from, from_size);
 			}
 		    }
@@ -183,7 +183,7 @@ int main() {
 		    if(0x01 & buffer[2]) players[slotno].input.right = true;
 		    else players[slotno].input.right = false;
 		    
-		    players[slotno].move(1);
+		    players[slotno].move(10);
 		    
 
 		    buffer[0] = slotno;
@@ -194,7 +194,6 @@ int main() {
 		    
 		    sendto(sock, buffer, buffersize, flags, (sockaddr*) &from, from_size);
 
-		    printf("test");
                     break;
 	    }
         }
