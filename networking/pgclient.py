@@ -37,13 +37,12 @@ while run:
     sock.sendto(bytes([msg]), ("thorondir.ddns.net", 4200)) # send message to address (tuple with string ip and int port)
     
     received = sock.recv(buffersize)
-   
+    print(received[0]) 
     try:
-        data = struct.unpack(">ii", received[0:8])
+        data = struct.unpack(">BB", received[0:1])
 
-        playerx = data[0]
-        playery = data[1]
-
-        print("{}, {}".format(playerx, playery))
+        if data[0]:
+            print("joined")
+            print("socket is {}".format(data[1]))
     except:
         print("Bad packet from server")
