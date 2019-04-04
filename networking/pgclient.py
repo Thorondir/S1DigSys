@@ -34,7 +34,7 @@ while run:
     
     msg = int(msg, 2) 
 
-    sock.sendto(bytes([msg]), ("127.0.0.1", 4200)) # send message to address (tuple with string ip and int port)
+    sock.sendto(bytes([msg]), ("thorondir.ddns.net", 4200)) # send message to address (tuple with string ip and int port)
     
     received = sock.recv(buffersize)
    
