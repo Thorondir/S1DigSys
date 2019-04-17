@@ -1,15 +1,16 @@
-import socket, struct
+import socket, struct, sys
 
 socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 IP = ""
 BUFFERSIZE = 1024
-PORT = 4203
+PORT = 4200
 
-def join(iptojoin, name):
+def join(iptojoin):
     global IP
     IP = iptojoin
     socket.sendto(bytes([0]) , (IP, PORT)) # send the server a message telling it to create a new player with name
     received = socket.recv(BUFFERSIZE)
+    print(received)
     if received[0]:
         return received[1]
     else:
@@ -23,6 +24,15 @@ def send_input(inputs):
         if bit: msg += '1'
         else: msg += '0'
     msg = int(msg,2)
-    sock.sendto(bytes([3, msg]), (IP, PORT))
-            
-def receive_state():
+    print(bytes([2,msg]))
+    socket.sendto(bytes([0x02, 0, msg]), (IP, PORT))
+    received = socket.recv(BUFFERSIZE)
+    received = struct.unpack('<cii1015x', received)
+    return (received[0], (received[1],received[2]))
+def get_data(key):#key is a character
+    msg = struct.pack('>BBB', 0x3, 0x0, ord(key))
+    print(msg)
+    socket.sendto(msg, (IP, PORT))
+    received = socket.recv(BUFFERSIZE)
+    received = struct.unpack('<cii1015x', received)
+    return (received[0], (received[1], received[2]))

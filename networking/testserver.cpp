@@ -1,7 +1,8 @@
-#include <cstdio>
+#include <iostream>
 #include <cerrno>
 #include <cstdlib>
-#include <string.h>
+#include <map>
+#include <string>
 #include <cstring>
 #include <time.h>
 #include <sys/socket.h>
@@ -15,7 +16,6 @@
  * It's a good practice and socket code is also something you are not very familiar with.
  * Also if you need to explain stuff to the other group members its also probably very helpful 
  */
-
 
 //function to print error message & reason then quit
 void error(const char* msg) {
@@ -31,6 +31,7 @@ enum class client_message : unsigned char {
     join =      0x00,
     leave =     0x01,
     input =     0x02,
+    getval =	0x03,
 };
 
 enum class server_message : unsigned char {
@@ -44,6 +45,9 @@ class player{
 
     	client_input input;
     	sockaddr_in address;
+
+	//pointer map
+	std::map<char,int*> vals = {{'x', &x},{'y', &y}}; //trying to set string key
         
         player() {
             x = 0;
@@ -61,6 +65,10 @@ class player{
             if (input.left && !input.right)	    x -= magnitude;
             else if (input.right && !input.left)    x += magnitude;
         }	
+
+	int* getval(char key){
+	    return vals[key];
+	}
 
 };
 
@@ -130,6 +138,8 @@ int main() {
     bool playerslots[serversize] = {0};
     float time_since_heard[serversize]; //list of times from clients for timeout
 
+    int print;
+
     while(true){
         clock_gettime(CLOCK_MONOTONIC, &time); //get current time at start of loop
         deltatime = getdeltatime(time, stamp);
@@ -138,6 +148,7 @@ int main() {
         nanosleep(&wait, &remainder);
 
         while(true){
+	    std::cout << print << '\n';
             int flags = 0;
             sockaddr_in from;
             unsigned int from_size = sizeof(from);
@@ -151,6 +162,7 @@ int main() {
             }
             switch((client_message)buffer[0]){
 		case client_message::join:
+		    {
 		    for(int i = 0; i < serversize + 1; i++){//serversize + 1, because if it goes past that we know the server was full
 			if(playerslots[i] == false){
 			    playerslots[i] = true;
@@ -166,13 +178,17 @@ int main() {
 			    sendto(sock, buffer, buffersize, flags, (sockaddr*)&from, from_size);
 			}
 		    }
+		    }
 		    break;
                 case client_message::leave:
+		    {
 		    playerslots[buffer[1]] = false;
 		    buffer[0] = 0x00;
 		    sendto(sock, buffer, buffersize, flags, (sockaddr*)&from, from_size);
+		    }
                     break;
                 case client_message::input://[3], [slot number], [input packet]
+		    {
                     unsigned char slotno = buffer[1];
 		    if(0x08 & buffer[2]) players[slotno].input.up = true;
 		    else players[slotno].input.up = false;
@@ -193,8 +209,22 @@ int main() {
 		    memcpy(&buffer[memindex], &players[slotno].y, sizeof(players[slotno].y));
 		    
 		    sendto(sock, buffer, buffersize, flags, (sockaddr*) &from, from_size);
+		    }
 
                     break;
+		case client_message::getval:
+		    {
+                    unsigned char slotno = buffer[1];
+		    char key = buffer[2];
+
+
+		    buffer[0] = true;
+		    int* xloc = players[slotno].vals[key];
+		    print = *xloc;
+		    memcpy(&buffer[1], xloc, sizeof(*xloc));
+		    sendto(sock, buffer, buffersize, flags, (sockaddr*) &from, from_size);
+		    }
+		    break;
 	    }
         }
     }
