@@ -1,0 +1,11 @@
+Problem: My code is really shite
+    Solution: Research what cpp code is supposed to look like etc
+Problem: Players do not spawn
+    Solution: Make players spawn
+
+
+
+
+Notes:
+
+went and looked at nnn code on github
