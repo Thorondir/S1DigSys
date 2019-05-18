@@ -12,10 +12,14 @@
 #include <arpa/inet.h>
 #include <fcntl.h>
 
-/* Make sure you write comments Ying.
- * It's a good practice and socket code is also something you are not very familiar with.
- * Also if you need to explain stuff to the other group members its also probably very helpful 
+/* TODO!!!
+ * Clean up the code.
+ * Learn how C++ code is actually supposed to look.
+ * lets face it ying, this code is probably some dogshit c++
+ * the equivalent of a car held together with old electrical tape or something
+ * thats all. good luck.
  */
+
 
 //function to print error message & reason then quit
 void error(const char* msg) {
