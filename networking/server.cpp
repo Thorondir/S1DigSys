@@ -1,6 +1,7 @@
 //Main Server Program
 
 #include "server.h"
+#include "player.h"
 
 void error(const char* msg) {
     std::perror(msg);
@@ -25,7 +26,7 @@ int main(){
     short port = 4200;
     
     //initialising socket
-    if(sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP) < 0) { //most of these functions return -1 if error. AF_INET for ip, SOCK_DGRAM for UDP
+    if((sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0) { //most of these functions return -1 if error. AF_INET for ip, SOCK_DGRAM for UDP
         error("ERROR opening socket");
     }
 
@@ -42,8 +43,6 @@ int main(){
     sockaddr_in serveraddress; //address of self
 
     serveraddress.sin_family = AF_INET;
-    serveraddress.sin_addr.s_addr = INADDR_ANY;
-    serveraddress.sin_port = htons(port); //htons: host to network short (byte order) *probably do more research into this since i don't really understand it*
 
     if (bind(sock, (sockaddr*) &serveraddress, sizeof(serveraddress)) < 0) error("ERROR on binding");
     
