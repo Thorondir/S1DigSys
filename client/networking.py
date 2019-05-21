@@ -1,4 +1,11 @@
 import socket, struct, sys
+"""
+USE JOIN ONCE. This creates a play object & slot.
+When the client exits, use LEAVE so that the slot can be cleared.
+use send_input instead of parsing input in client.INPUTS:  bool{KEY1, KEY2, KEY3, KEY4, UP, DOWN, LEFT, RIGHT}
+Extra keys can be for other things
+Get data might not function very well in game loop right now, but can be used to edit data that will be stored on the server
+"""
 
 socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 IP = ""
@@ -8,7 +15,7 @@ PORT = 4200
 def join(iptojoin):
     global IP
     IP = iptojoin
-    socket.sendto(bytes([0]) , (IP, PORT)) # send the server a message telling it to create a new player with name
+    socket.sendto(bytes([0]) , (IP, PORT)) # send the server a message telling it to create a new player with NO name
     received = socket.recv(BUFFERSIZE)
     print(received)
     if received[0]:

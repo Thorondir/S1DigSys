@@ -23,7 +23,7 @@ class player{
     	client_input input;
     	sockaddr_in address;
 
-	//pointer map
+	//pointer map I DON'T THINK THIS IS NECESSARY. DATA CAN BE SENT IN THE GAME STATE
 	std::map<char,int*> vals = {{'x', &x},{'y', &y}}; //trying to set string key
         
         player();
