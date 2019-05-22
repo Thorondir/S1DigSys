@@ -1,6 +1,7 @@
 //Player Objects and Method
 
 #include "player.h"
+#include "core.h"
 
 player::player() {
     x = 0;

@@ -2,6 +2,7 @@
 
 #include "server.h"
 #include "player.h"
+#include "core.h"
 
 void error(const char* msg) {
     std::perror(msg);
@@ -20,8 +21,6 @@ struct timespec getdeltatime(struct timespec current, struct timespec stamp){
 }
 
 int main(){
-    const unsigned int buffersize = 1024;
-    const unsigned short serversize = 4;
     int sock;
     short port = 4200;
     
