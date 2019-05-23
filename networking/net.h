@@ -7,6 +7,6 @@
 #include <cstring>
 #include <algorithm>
 
-void makegamestate(unsigned short, bool[], player[], unsigned short, int, unsigned char*);
+void makegamestate(bool[], player[], unsigned short, unsigned char*);
 
 #endif

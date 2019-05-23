@@ -3,6 +3,7 @@
 #include "server.h"
 #include "player.h"
 #include "core.h"
+#include "net.h"
 
 void error(const char* msg) {
     std::perror(msg);
@@ -42,6 +43,9 @@ int main(){
     sockaddr_in serveraddress; //address of self
 
     serveraddress.sin_family = AF_INET;
+    serveraddress.sin_addr.s_addr = INADDR_ANY;
+    serveraddress.sin_port = htons(port); //htons: host to network short (byte order) *probably do more research into this since i don't really understand it*
+
 
     if (bind(sock, (sockaddr*) &serveraddress, sizeof(serveraddress)) < 0) error("ERROR on binding");
     
@@ -69,16 +73,16 @@ int main(){
 
     while(true){
 	//locking 60hz
-        clock_gettime(CLOCK_MONOTONIC, &time); //get current time at start of loop
-        deltatime = getdeltatime(time, stamp);
-        stamp = time;
-        wait.tv_nsec = (deltatime.tv_nsec/16666666) * 16666666 + (16666666 - deltatime.tv_nsec); //wait until 1/60th of a second has passed since the start of the last tick. If it's already been over 1/60th of a second, wait even longer
-        nanosleep(&wait, &remainder);
+        //clock_gettime(CLOCK_MONOTONIC, &time); //get current time at start of loop
+        //deltatime = getdeltatime(time, stamp);
+        //stamp = time;
+        //wait.tv_nsec = (deltatime.tv_nsec/16666666) * 16666666 + (16666666 - deltatime.tv_nsec); //wait until 1/60th of a second has passed since the start of the last tick. If it's already been over 1/60th of a second, wait even longer
+        //nanosleep(&wait, &remainder);
 
         while(true){
 	    //input parsing loop
             int flags = 0;
-            sockaddr_in from;
+	    sockaddr_in from;
             unsigned int from_size = sizeof(from);
             unsigned char buffer[buffersize]; //perhaps convert byte order?
             int bytes_received = recvfrom(sock, buffer, buffersize, flags, (sockaddr*)&from, &from_size);
@@ -88,10 +92,12 @@ int main(){
                 }
                 break;
             }
+	    std::cout << (int)buffer[0] << std::endl;
 	    //make the cases functions from some other source file
             switch((client_message)buffer[0]){
 		case client_message::join:
 		    {
+		    std::cout << "player joined" << std::endl;
 		    for(int i = 0; i < serversize + 1; i++){//serversize + 1, because if it goes past that we know the server was full
 			if(playerslots[i] == false){
 			    playerslots[i] = true;
@@ -111,6 +117,7 @@ int main(){
 		    break;
                 case client_message::leave:
 		    {
+		    std::cout << "player at slot number " << (int)buffer[1] << " left" << std::endl;
 		    playerslots[buffer[1]] = false;
 		    buffer[0] = 0x00;
 		    sendto(sock, buffer, buffersize, flags, (sockaddr*)&from, from_size);
@@ -154,7 +161,14 @@ int main(){
 		    }
 		    break;
 	    }
-        }
+        }/*
+	for(int slot; slot < serversize; ++slot){
+	    if(playerslots[slot]){
+		unsigned char buffer[buffersize];
+		makegamestate(playerslots, players, slot, &buffer[0]);
+		sendto(sock, buffer, buffersize, flags, (sockaddr*) &players[slot].address, sizeof(players[slot].address));
+	    }
+	}*/
     }
     return 0;
 }

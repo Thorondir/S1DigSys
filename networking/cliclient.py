@@ -8,9 +8,11 @@ while True:
     msg = input()
     msg = int(msg,16).to_bytes(int(len(msg)/2),'big')
     sock.sendto(msg, ("127.0.0.1", 4200))
+    print(msg)
     received = sock.recv(buffersize)
     try:
-        received = struct.unpack('<cii1015x', received)
+        received = struct.unpack('>cii1015x', received)
         print(received)
     except:
+        print("strange output")
         pass
