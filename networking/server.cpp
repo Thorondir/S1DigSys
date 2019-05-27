@@ -4,6 +4,7 @@
 #include "player.h"
 #include "core.h"
 #include "net.h"
+#include <bitset>
 
 void error(const char* msg) {
     std::perror(msg);
@@ -73,18 +74,18 @@ int main(){
 
     while(true){
 	//locking 60hz
-        //clock_gettime(CLOCK_MONOTONIC, &time); //get current time at start of loop
-        //deltatime = getdeltatime(time, stamp);
-        //stamp = time;
-        //wait.tv_nsec = (deltatime.tv_nsec/16666666) * 16666666 + (16666666 - deltatime.tv_nsec); //wait until 1/60th of a second has passed since the start of the last tick. If it's already been over 1/60th of a second, wait even longer
-        //nanosleep(&wait, &remainder);
+        clock_gettime(CLOCK_MONOTONIC, &time); //get current time at start of loop
+        deltatime = getdeltatime(time, stamp);
+        stamp = time;
+        wait.tv_nsec = (deltatime.tv_nsec/16666666) * 16666666 + (16666666 - deltatime.tv_nsec); //wait until 1/60th of a second has passed since the start of the last tick. If it's already been over 1/60th of a second, wait even longer
+        nanosleep(&wait, &remainder);
 
         while(true){
 	    //input parsing loop
             int flags = 0;
 	    sockaddr_in from;
             unsigned int from_size = sizeof(from);
-            unsigned char buffer[buffersize]; //perhaps convert byte order?
+            unsigned char buffer[buffersize] = {0}; //perhaps convert byte order?
             int bytes_received = recvfrom(sock, buffer, buffersize, flags, (sockaddr*)&from, &from_size);
             if (bytes_received < 0){
                 if(errno != EWOULDBLOCK || errno != EAGAIN){
@@ -97,20 +98,23 @@ int main(){
             switch((client_message)buffer[0]){
 		case client_message::join:
 		    {
-		    std::cout << "player joined" << std::endl;
-		    for(int i = 0; i < serversize + 1; i++){//serversize + 1, because if it goes past that we know the server was full
+		    for(int i = 0; i <= serversize; ++i){//serversize + 1, because if it goes past that we know the server was full
+			if(i == serversize){ //if i reaches serversize, then the server was full and the client failed to join
+			    std::cout << "Server full, player could not join" << std::endl;
+			    buffer[0] = 0x0;
+			    sendto(sock, buffer, buffersize, flags, (sockaddr*)&from, from_size);
+			    break;
+			}
 			if(playerslots[i] == false){
+			    std::cout << "player joined at slot " << (int)i << std::endl;
 			    playerslots[i] = true;
 			    players[i] = player(10,10);
 			    players[i].address = from;
 			    buffer[0] = true;
 			    buffer[1] = i; //since it's a byte, serversize must always be 256 or less
+			    //sendto(sock, buffer, buffersize, flags, (sockaddr*)&from, from_size);
 			    sendto(sock, buffer, buffersize, flags, (sockaddr*)&from, from_size);
 			    break;
-			}
-			if(i == serversize){ //if i reaches serversize, then the server was full and the client failed to join
-			    buffer[0] = 0x0;
-			    sendto(sock, buffer, buffersize, flags, (sockaddr*)&from, from_size);
 			}
 		    }
 		    }
@@ -125,6 +129,7 @@ int main(){
                     break;
                 case client_message::input://[3], [slot number], [input packet]
 		    {
+		    std::cout << "player at slot number " << (int)buffer[1] << " sending input" << std::endl;
                     unsigned char slotno = buffer[1];
 		    if(0x08 & buffer[2]) players[slotno].input.up = true;
 		    else players[slotno].input.up = false;
@@ -144,7 +149,7 @@ int main(){
 		    memindex += sizeof(players[slotno].x);
 		    memcpy(&buffer[memindex], &players[slotno].y, sizeof(players[slotno].y));
 		    
-		    sendto(sock, buffer, buffersize, flags, (sockaddr*) &from, from_size);
+		    //sendto(sock, buffer, buffersize, flags, (sockaddr*) &from, from_size);
 		    }
 
                     break;
@@ -161,14 +166,42 @@ int main(){
 		    }
 		    break;
 	    }
-        }/*
-	for(int slot; slot < serversize; ++slot){
+        }
+	for(int slot = 0; slot < serversize; ++slot){
 	    if(playerslots[slot]){
 		unsigned char buffer[buffersize];
-		makegamestate(playerslots, players, slot, &buffer[0]);
+		int memindex = 0; 
+		int bufx = htonl(players[slot].x);
+		int bufy = htonl(players[slot].y);
+		//self x coordinate
+		memcpy(&buffer[memindex], &bufx, sizeof(bufx));
+		memindex += sizeof(bufx);
+		//self y coordinate
+		memcpy(&buffer[memindex], &bufy, sizeof(bufy));
+		memindex += sizeof(bufy);
+		//add the size of "num players"
+		int numplayers = 0;
+		int memindex_numplayers = memindex;
+		memindex += 1;
+		//player locations
+		for (int playerindex = 0; playerindex < serversize; ++playerindex){
+		    if(playerindex != slot && playerslots[playerindex]){
+			++numplayers;
+			int bufx = htonl(players[playerindex].x);
+			int bufy = htonl(players[playerindex].y);
+			//other x coordinate
+			memcpy(&buffer[memindex], &bufx, sizeof(bufx));
+			memindex += sizeof(bufx);
+			//other y coordinate
+			memcpy(&buffer[memindex], &bufy, sizeof(bufy));
+			memindex += sizeof(bufy);
+		    }
+		}
+		//add numplayers to buffer
+		buffer[memindex_numplayers] = (unsigned char)numplayers;
 		sendto(sock, buffer, buffersize, flags, (sockaddr*) &players[slot].address, sizeof(players[slot].address));
 	    }
-	}*/
+	}
     }
     return 0;
 }
