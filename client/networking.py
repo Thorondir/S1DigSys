@@ -11,6 +11,18 @@ socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 IP = ""
 BUFFERSIZE = 1024
 PORT = 4200
+received = 0
+
+def rcv():
+    global received
+    while True:
+        received = socket.recv(BUFFERSIZE)
+        try:
+            #number of players
+            playernum = struct.unpack('>iiB', received[0:((2*4)+1)])[2]
+            received = struct.unpack('>iiB{}i{}x'.format(playernum*2, BUFFERSIZE-(((2+(2*playernum))*4)+1)), received)
+        except:
+            pass
 
 def join(iptojoin):
     global IP, slot
@@ -18,6 +30,7 @@ def join(iptojoin):
     socket.sendto(bytes([0]) , (IP, PORT)) # send the server a message telling it to create a new player with NO name
     received = socket.recv(BUFFERSIZE)
     received = struct.unpack('>BB', received[0:2])
+    _thread.start_new_thread(rcv, ())
     if received[0]:
         slot = received[1]
         return 1
@@ -34,7 +47,6 @@ def send_input(inputs):
         if bit: msg += '1'
         else: msg += '0'
     msg = int(msg,2)
-    print(bytes([2,msg]))
     socket.sendto(bytes([0x02, slot, msg]), (IP, PORT))
 
 def get_data(key):#key is a character
@@ -46,12 +58,5 @@ def get_data(key):#key is a character
     return (received[0], (received[1], received[2]))
 
 def receive():
-    received = sock.recv(BUFFERSIZE)
-    try:
-        #number of players
-        playernum = struct.unpack('>iiB', received[0:((2*4)+1)])[2]
-        return struct.unpack('>iiB{}i{}x'.format(playernum*2, buffersize-(((2+(2*playernum))*4)+1)), received)
-    except:
-        print("strange output")
-        return -1
-        pass
+    global received
+    return received

@@ -4,12 +4,19 @@ sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
 buffersize = 1024
 
+def move():
+    while True:
+        msg = int('020005',16).to_bytes(int(len('020001')/2),'big')
+        sock.sendto(msg, ("127.0.0.1", 4200))
+
 def cli():
     global received
     while True:
         msg = input()
         if msg == 'print':
             print(received)
+        elif msg == 'move':
+            _thread.start_new_thread(move, ())
         else:
             msg = int(msg,16).to_bytes(int(len(msg)/2),'big')
             sock.sendto(msg, ("127.0.0.1", 4200))

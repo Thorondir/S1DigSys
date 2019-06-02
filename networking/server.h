@@ -7,6 +7,7 @@
 #include <cerrno>
 #include <cstdlib>
 #include <map>
+#include <vector>
 #include <string>
 #include <cstring>
 #include <time.h>
@@ -16,6 +17,7 @@
 #include <netinet/udp.h>
 #include <arpa/inet.h>
 #include <fcntl.h>
+#include <bitset>
 
 //function to print error message & reason then quit
 void error(const char*);

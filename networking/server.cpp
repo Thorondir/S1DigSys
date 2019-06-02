@@ -1,10 +1,10 @@
 //Main Server Program
 
 #include "server.h"
+#include "entity.h"
 #include "player.h"
 #include "core.h"
 #include "net.h"
-#include <bitset>
 
 void error(const char* msg) {
     std::perror(msg);
@@ -71,6 +71,7 @@ int main(){
     player players[serversize]; //list of players 
     bool playerslots[serversize] = {0};
     float time_since_heard[serversize]; //list of times from clients for timeout
+    std::vector<entity> entities;
 
     while(true){
 	//locking 60hz
@@ -93,7 +94,7 @@ int main(){
                 }
                 break;
             }
-	    std::cout << (int)buffer[0] << std::endl;
+	    //std::cout << (int)buffer[0] << std::endl;
 	    //make the cases functions from some other source file
             switch((client_message)buffer[0]){
 		case client_message::join:
@@ -127,9 +128,9 @@ int main(){
 		    sendto(sock, buffer, buffersize, flags, (sockaddr*)&from, from_size);
 		    }
                     break;
-                case client_message::input://[3], [slot number], [input packet]
+                case client_message::input://[3], [slot number], [input packet] MOVEMENT HAS BEEN CHANGED. IMPLEMENT IT.
 		    {
-		    std::cout << "player at slot number " << (int)buffer[1] << " sending input" << std::endl;
+		    //std::cout << "player at slot number " << (int)buffer[1] << " sending input" << std::endl;
                     unsigned char slotno = buffer[1];
 		    if(0x08 & buffer[2]) players[slotno].input.up = true;
 		    else players[slotno].input.up = false;
@@ -140,7 +141,7 @@ int main(){
 		    if(0x01 & buffer[2]) players[slotno].input.right = true;
 		    else players[slotno].input.right = false;
 		    
-		    players[slotno].move(10);
+		    players[slotno].changevelocity(deltatime);
 		    
 
 		    buffer[0] = slotno;
@@ -167,6 +168,17 @@ int main(){
 		    break;
 	    }
         }
+	//tick every player/entity??
+	for(entity e : entities){
+	    e.move(deltatime);
+	}
+	for(int slot = 0; slot < serversize; ++slot){
+	    if(playerslots[slot]){
+		std::cout << "player with velocity direction " << players[slot].velocity.direction<< " moving" << std::endl;
+		players[slot].move(deltatime);
+	    }
+	}
+	//creating packets and sending
 	for(int slot = 0; slot < serversize; ++slot){
 	    if(playerslots[slot]){
 		unsigned char buffer[buffersize];
