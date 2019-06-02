@@ -3,7 +3,13 @@
 //player.h
 
 #include <netinet/in.h>
+#include <time.h>
+#include <cmath>
 #include <map>
+
+struct vector{
+    float x, y;
+}
 
 struct client_input{  //struct to hold player input in bools
     bool up, down, left, right;
@@ -20,6 +26,8 @@ class player{
     public:
 	int x, y;
 
+	vector velocity;
+
     	client_input input;
     	sockaddr_in address;
 
@@ -34,4 +42,6 @@ class player{
 
 	int* getval(char key);
 };
+
+float magnitude(float, float);
 #endif

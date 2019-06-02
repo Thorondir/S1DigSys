@@ -13,13 +13,23 @@ player::player(int a, int b){
     y = b;
 }
 		
-void player::move(int magnitude){	
-    if (input.up && !input.down) 	    y -= magnitude;
-    else if (input.down && !input.up)	    y += magnitude;
-    if (input.left && !input.right)	    x -= magnitude;
-    else if (input.right && !input.left)    x += magnitude;
-}	
+void player::changevelocity(int magnitude, struct timespec deltatime){
+    if (input.up){
+
+    }
+}
 
 int* player::getval(char key){
     return vals[key];
 }
+
+float magnitude(vector vec){//magnitude of vector
+    float magnitude = stdd::sqrt(std::pow(vec.x, 2)+std::pow(vec.y, 2));
+    return magnitude;
+}
+
+/*
+ * Max velocity: 250 pix/seconda = speed
+ * Every second accelerate by 0.1*speed
+ * Do your own drag thing.
+ */
