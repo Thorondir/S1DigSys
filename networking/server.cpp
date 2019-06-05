@@ -174,7 +174,7 @@ int main(){
 	}
 	for(int slot = 0; slot < serversize; ++slot){
 	    if(playerslots[slot]){
-		std::cout << "player with velocity direction " << players[slot].velocity.direction<< " moving" << std::endl;
+		std::cout << "player with velocity direction " << (players[slot].velocity.magnitude) << " moving" << std::endl;
 		players[slot].move(deltatime);
 	    }
 	}

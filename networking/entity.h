@@ -14,7 +14,7 @@ class entity{
 
 	float maxvelocity = 250;
 	float acceleration = 25;
-	float drag = 0.5;
+	float drag = 10;
 
 	//pointer map I DON'T THINK THIS IS NECESSARY. DATA CAN BE SENT IN THE GAME STATE
 	std::map<char,int*> vals = {{'x', &x},{'y', &y}}; //trying to set string key

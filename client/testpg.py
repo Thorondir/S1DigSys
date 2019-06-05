@@ -9,6 +9,7 @@ x = 0
 y = 0
 
 while not quit:
+    screen.fill((0,0,0))
     for event in pygame.event.get():
         if event.type==pygame.QUIT:
             quit = True
@@ -20,8 +21,8 @@ while not quit:
     if recv != 0:
         x = recv[0]
         y = recv[1]
-
-    screen.fill((0,0,0))
-    pygame.draw.rect(screen, (0,0,255), pygame.Rect(x,y,10,10))
+        pygame.draw.rect(screen, (0,0,255), pygame.Rect(x,y,10,10))
+        for i in range(recv[2]):
+            pygame.draw.rect(screen, (255,0,0), pygame.Rect(recv[3+i],recv[4+i],10,10))
 
     pygame.display.flip()
