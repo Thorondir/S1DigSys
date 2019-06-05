@@ -8,24 +8,24 @@
 
 class entity{
     public:
-	int x, y;
+	float x, y;
 
 	vector velocity = vector(0,0);
 
 	float maxvelocity = 250;
 	float acceleration = 25;
-	float drag = 10;
+	float drag = 5;
 
 	//pointer map I DON'T THINK THIS IS NECESSARY. DATA CAN BE SENT IN THE GAME STATE
-	std::map<char,int*> vals = {{'x', &x},{'y', &y}}; //trying to set string key
+	//std::map<char,int*> vals = {{'x', &x},{'y', &y}}; //trying to set string key
 
 	entity() : x(0), y(0){};
         
-        entity(int, int);
+        entity(float, float);
                         
         void move(struct timespec);
 
-	int* getval(char);
+	//int* getval(char);
 };
 
 #endif

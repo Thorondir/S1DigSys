@@ -23,6 +23,6 @@ while not quit:
         y = recv[1]
         pygame.draw.rect(screen, (0,0,255), pygame.Rect(x,y,10,10))
         for i in range(recv[2]):
-            pygame.draw.rect(screen, (255,0,0), pygame.Rect(recv[3+i],recv[4+i],10,10))
+            pygame.draw.rect(screen, (255,0,0), pygame.Rect(recv[3+i*2],recv[4+i*2],10,10))
 
     pygame.display.flip()

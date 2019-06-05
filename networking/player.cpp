@@ -7,7 +7,7 @@ player::player(){
     y = 0;
 }
 
-player::player(int a, int b){
+player::player(float a, float b){
     x = a;
     y = b;
 }

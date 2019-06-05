@@ -24,7 +24,7 @@ class player : public entity{
         
         player();
 
-        player(int, int);
+        player(float, float);
 	
 	void changevelocity(struct timespec);
 };

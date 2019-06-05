@@ -109,7 +109,7 @@ int main(){
 			if(playerslots[i] == false){
 			    std::cout << "player joined at slot " << (int)i << std::endl;
 			    playerslots[i] = true;
-			    players[i] = player(10,10);
+			    players[i] = player(10.0,10.0);
 			    players[i].address = from;
 			    buffer[0] = true;
 			    buffer[1] = i; //since it's a byte, serversize must always be 256 or less
@@ -154,7 +154,7 @@ int main(){
 		    }
 
                     break;
-		case client_message::getval:
+		/*case client_message::getval:
 		    {
                     unsigned char slotno = buffer[1];
 		    char key = buffer[2];
@@ -165,7 +165,7 @@ int main(){
 		    memcpy(&buffer[1], xloc, sizeof(*xloc));
 		    sendto(sock, buffer, buffersize, flags, (sockaddr*) &from, from_size);
 		    }
-		    break;
+		    break;*/
 	    }
         }
 	//tick every player/entity??
@@ -174,7 +174,6 @@ int main(){
 	}
 	for(int slot = 0; slot < serversize; ++slot){
 	    if(playerslots[slot]){
-		std::cout << "player with velocity direction " << (players[slot].velocity.magnitude) << " moving" << std::endl;
 		players[slot].move(deltatime);
 	    }
 	}
@@ -183,8 +182,8 @@ int main(){
 	    if(playerslots[slot]){
 		unsigned char buffer[buffersize];
 		int memindex = 0; 
-		int bufx = htonl(players[slot].x);
-		int bufy = htonl(players[slot].y);
+		int bufx = htonl(std::round(players[slot].x));
+		int bufy = htonl(std::round(players[slot].y));
 		//self x coordinate
 		memcpy(&buffer[memindex], &bufx, sizeof(bufx));
 		memindex += sizeof(bufx);
@@ -199,8 +198,8 @@ int main(){
 		for (int playerindex = 0; playerindex < serversize; ++playerindex){
 		    if(playerindex != slot && playerslots[playerindex]){
 			++numplayers;
-			int bufx = htonl(players[playerindex].x);
-			int bufy = htonl(players[playerindex].y);
+			int bufx = htonl(std::round(players[playerindex].x));
+			int bufy = htonl(std::round(players[playerindex].y));
 			//other x coordinate
 			memcpy(&buffer[memindex], &bufx, sizeof(bufx));
 			memindex += sizeof(bufx);
