@@ -59,4 +59,8 @@ def get_data(key):#key is a character
 
 def receive():
     global received
-    return received
+    ret = [received[0],received[1]]
+    for i in range(received[2]):
+        ret.append(received[3+i*2], received[4+i*2])
+
+    return ret
